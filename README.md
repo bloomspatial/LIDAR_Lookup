@@ -201,7 +201,7 @@ lidar-lookup --point -77.035072 38.889467   # Washington Monument
 
 Indexes are built from current 3DEP LIDAR data. For the sample areas (Golden Gate Bridge, Gateway Arch, Washington Monument), the results and any cached indexes in this repo reflect the LIDAR catalog as it was when this code was created; the live catalog may change over time.
 
-There is **no manual index build step**. By default, each project’s metadata index is built on first use and cached under **`LIDAR_CACHE_DIR`** (default `inputs/cache/`). With `-v` you’ll see `per-project index file found --- <path>` when loading from cache, or `per-project index file missing --- <path>` when building from XML. Use `--no-filter-tiles` to skip the index and list all LAZ URLs for the project.
+By default, each project’s metadata index is built on first use and cached under **`LIDAR_CACHE_DIR`** (default `inputs/cache/`). With `-v` you’ll see `per-project index file found --- <path>` when loading from cache, or `per-project index file missing --- <path>` when building from XML. Use `--no-filter-tiles` to skip the index and list all LAZ URLs for the project.
 
 ### Environment variables
 
