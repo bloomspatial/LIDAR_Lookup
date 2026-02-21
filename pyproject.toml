@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "lidar-lookup"
+version = "0.1.0"
+description = "List 3DEP LIDAR LAZ file URLs for a bounding box or GPS point (JSON or coords; no download, no S3)."
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.10"
+authors = [{ name = "bloomspatial" }]
+keywords = ["lidar", "3dep", "usgs", "laz", "geopackage", "bounding-box"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: GIS",
+]
+dependencies = [
+    "requests>=2.28",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7",
+]
+display = [
+    "laspy>=2.0",
+    "lazrs>=0.5",
+    "pyvista>=0.43",
+]
+
+[project.scripts]
+lidar-lookup = "lidar_lookup.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

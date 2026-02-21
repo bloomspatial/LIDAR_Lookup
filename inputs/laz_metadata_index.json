@@ -1,0 +1,15 @@
+{
+  "tile_1.laz": {
+    "west": -86.2,
+    "east": -86.1,
+    "north": 40.1,
+    "south": 40.0,
+    "url": "https://example.com/tile_1.laz"
+  },
+  "tile_2.laz": {
+    "west": -86.3,
+    "east": -86.2,
+    "north": 40.2,
+    "south": 40.1
+  }
+}
