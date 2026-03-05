@@ -111,6 +111,16 @@ def main() -> int:
         help="Plot every Nth point (default: auto-decimate to ~10M points). Use 1 for all points.",
     )
     parser.add_argument(
+        "--pin",
+        metavar="LON_LAT_Z",
+        nargs="*",
+        type=float,
+        action="append",
+        default=[],
+        dest="pins",
+        help="Add a pin at (lon, lat) or (lon, lat, z) in WGS84. Z is sampled from the point cloud if omitted. Can be repeated.",
+    )
+    parser.add_argument(
         "--no-local-index",
         action="store_true",
         dest="no_local_index",
@@ -154,7 +164,21 @@ def main() -> int:
                 print(f"  {e}", file=sys.stderr)
             return 1
         try:
-            display_laz(display_files, decimate=args.decimate)
+            pins_wgs84 = None
+            if args.pins:
+                for p in args.pins:
+                    if len(p) not in (2, 3):
+                        print(
+                            f"Error: each --pin must be (lon lat) or (lon lat z), got {len(p)} value(s).",
+                            file=sys.stderr,
+                        )
+                        return 1
+                pins_wgs84 = [tuple(p) for p in args.pins]
+            display_laz(
+                display_files,
+                decimate=args.decimate,
+                pins_wgs84=pins_wgs84,
+            )
         except Exception as e:
             print(f"Error displaying: {e}", file=sys.stderr)
             return 1

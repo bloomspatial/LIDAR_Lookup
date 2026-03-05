@@ -173,6 +173,9 @@ lidar-lookup path/to/file.laz
 lidar-lookup file1.laz file2.laz file3.las   # multiple files in one view
 # --display is optional when passing .laz/.las as arguments:
 lidar-lookup --display path/to/file.laz      # same as above
+# Add pin(s) at (lon, lat) or (lon, lat, z) in WGS84 (z sampled from point cloud if omitted):
+lidar-lookup file.laz --pin -86.788 39.367
+lidar-lookup file.laz --pin -86.788 39.367 200
 ```
 
 ### Sample locations

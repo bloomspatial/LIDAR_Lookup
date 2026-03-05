@@ -185,9 +185,63 @@ def _load_one(
     return cloud, has_color
 
 
+def _crs_from_las(path: Path):
+    """Return pyproj.CRS from the first LAS/LAZ file, or None if not present."""
+    import laspy  # type: ignore[import-untyped]
+
+    with laspy.open(path) as fh:
+        return fh.header.parse_crs()
+
+
+def _resolve_pins_wgs84(
+    pins_wgs84: list[tuple[float, ...]],
+    first_path: Path,
+    first_cloud: "pv.PolyData",
+    bounds: tuple[float, float, float, float, float, float],
+) -> list[tuple[float, float, float]]:
+    """Transform (lon, lat) or (lon, lat, z) to (x, y, z) in data CRS; sample z when omitted."""
+    import numpy as np  # type: ignore[import-untyped]
+    import pyproj  # type: ignore[import-untyped]
+
+    crs = _crs_from_las(first_path)
+    if crs is None:
+        raise ValueError(
+            f"Pin in lat/lon requires a CRS in the LAZ/LAS file. None found in {first_path.name}. "
+            "Use projected (x, y, z) via the API instead."
+        )
+    wgs84 = pyproj.CRS("EPSG:4326")
+    transformer = pyproj.Transformer.from_crs(wgs84, crs, always_xy=True)
+    pts = first_cloud.points  # (n, 3) x,y,z
+    xy = pts[:, :2]
+    z_all = pts[:, 2]
+    dx = bounds[1] - bounds[0]
+    dy = bounds[3] - bounds[2]
+    sample_radius = max(dx, dy) * 0.002  # small radius for z sampling
+    out: list[tuple[float, float, float]] = []
+    for spec in pins_wgs84:
+        if len(spec) == 2:
+            lon, lat = spec
+            x, y = transformer.transform(lon, lat)
+            dist_sq = (xy[:, 0] - x) ** 2 + (xy[:, 1] - y) ** 2
+            near = dist_sq <= (sample_radius**2)
+            if np.any(near):
+                z = float(np.median(z_all[near]))
+            else:
+                idx = np.argmin(dist_sq)
+                z = float(z_all[idx])
+            out.append((float(x), float(y), z))
+        else:
+            lon, lat, z = spec
+            x, y = transformer.transform(lon, lat)
+            out.append((float(x), float(y), float(z)))
+    return out
+
+
 def display_laz(
     path: str | Path | list[str] | list[Path],
     decimate: int | None = None,
+    pins: list[tuple[float, float, float]] | None = None,
+    pins_wgs84: list[tuple[float, ...]] | None = None,
 ) -> None:
     """
     Open one or more LAZ/LAS files and show an interactive 3D point cloud viewer.
@@ -198,6 +252,13 @@ def display_laz(
     maps to the same color; RGB is normalized to a global range. Large files are
     automatically decimated to ~10M points for responsiveness (set decimate=1 to force
     plotting every point).
+
+    pins: Optional list of (x, y, z) in the same coordinate system as the point cloud
+    (e.g. projected meters). Each pin is drawn as a small red sphere.
+
+    pins_wgs84: Optional list of (lon, lat) or (lon, lat, z) in WGS84. Converted to
+    data coordinates using the CRS from the first file; if z is omitted, it is sampled
+    from the point cloud at that location. Requires pyproj and a CRS in the LAS/LAZ.
 
     Raises:
         ImportError: If laspy or pyvista are not installed (install with [display]).
@@ -286,6 +347,37 @@ def display_laz(
             if len(clouds) > 3:
                 title += f" ... +{len(clouds) - 3} more"
         plotter.add_title(f"{title}  |  WASD fly, Shift+WASD rotate, Q/E up-down", font_size=10)
+
+    # Resolve WGS84 pins to (x, y, z) if present
+    if pins_wgs84:
+        bounds = plotter.bounds
+        resolved = _resolve_pins_wgs84(
+            pins_wgs84, paths[0], clouds[0][0], bounds
+        )
+        pins = (pins or []) + resolved
+    # Pins: small red spheres at given (x, y, z) in data coordinates
+    if pins:
+        bounds = plotter.bounds
+        dx = bounds[1] - bounds[0]
+        dy = bounds[3] - bounds[2]
+        dz = bounds[5] - bounds[4]
+        radius = max(dx, dy, dz) * 0.00375  # pin sphere size
+        for (px, py, pz) in pins:
+            sphere = pv.Sphere(center=(px, py, pz), radius=radius)
+            plotter.add_mesh(sphere, color="red", smooth_shading=True)
+
+    # Align 2D with north at top, south at bottom (top-down view, Y = North = up on screen)
+    bounds = plotter.bounds
+    cx = (bounds[0] + bounds[1]) / 2
+    cy = (bounds[2] + bounds[3]) / 2
+    cz = (bounds[4] + bounds[5]) / 2
+    dx, dy, dz = bounds[1] - bounds[0], bounds[3] - bounds[2], bounds[5] - bounds[4]
+    dist = max(dx, dy, dz) * 1.8
+    plotter.camera_position = [
+        (cx, cy, cz + dist),  # camera above center
+        (cx, cy, cz),         # look at center
+        (0, 1, 0),            # view up = +Y (North at top of screen)
+    ]
 
     plotter.show(full_screen=False)
     print("Viewer closed.")

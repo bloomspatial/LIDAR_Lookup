@@ -33,6 +33,7 @@ display = [
     "laspy>=2.0",
     "lazrs>=0.5",
     "pyvista>=0.43",
+    "pyproj>=3.0",
 ]
 
 [project.scripts]
