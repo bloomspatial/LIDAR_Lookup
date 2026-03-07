@@ -90,7 +90,7 @@ Then run the CLI in one of these ways:
 **Using `uv run` (no activation needed):**
 
 ```bash
-uv run lidar-lookup --bbox -122.479255 37.810 -122.477255 37.828
+uv run lidar-lookup --bbox 37.810 -122.479255 37.828 -122.477255
 uv run lidar-lookup samples/golden-gate-bridge.json --filenames
 ```
 
@@ -140,16 +140,16 @@ Use **`-v`** (or **`--verbose`**) to print debug messages: 3DEP bbox query, proj
 
 ```bash
 # Bbox as four numbers (minx miny maxx maxy)
-lidar-lookup --bbox -122.479255 37.810 -122.477255 37.828
+lidar-lookup --bbox 37.810 -122.479255 37.828 -122.477255
 
 # Single point or bbox: only LAZ tiles that intersect (default; uses per-project index)
-lidar-lookup --point -122.478255 37.819023
+lidar-lookup --point 37.819023 -122.478255
 lidar-lookup samples/gateway-arch.json
 # List all LAZ files in each project (no bbox filter)
 lidar-lookup samples/gateway-arch.json --no-filter-tiles
 # Expand to a small bbox around point (~220 m with 0.001 deg)
-lidar-lookup --point -122.478255 37.819023 --point-buffer 0.001
-lidar-lookup --point -122.478255 37.819023 --point-buffer 0.01
+lidar-lookup --point 37.819023 -122.478255 --point-buffer 0.001
+lidar-lookup --point 37.819023 -122.478255 --point-buffer 0.01
 
 # Bbox from JSON file or literal
 lidar-lookup bbox.json
@@ -158,41 +158,41 @@ lidar-lookup --json '[-122.479255, 37.810, -122.477255, 37.828]'
 echo '{"bbox": [-122.479255, 37.810, -122.477255, 37.828]}' | lidar-lookup -
 
 # Output options
-lidar-lookup --bbox -122.479255 37.810 -122.477255 37.828 --filenames
-lidar-lookup --bbox -122.479255 37.810 -122.477255 37.828 -o urls.txt
+lidar-lookup --bbox 37.810 -122.479255 37.828 -122.477255 --filenames
+lidar-lookup --bbox 37.810 -122.479255 37.828 -122.477255 -o urls.txt
 
 # Download each LAZ file to the current directory (or --download-dir)
 lidar-lookup samples/golden-gate-bridge.json --download
-lidar-lookup --bbox -122.479255 37.810 -122.477255 37.828 --download --download-dir ./laz_files
+lidar-lookup --bbox 37.810 -122.479255 37.828 -122.477255 --download --download-dir ./laz_files
 
 # Bbox: filtered by default; use --no-filter-tiles to list all project URLs
-lidar-lookup --bbox -122.479255 37.810 -122.477255 37.828
+lidar-lookup --bbox 37.810 -122.479255 37.828 -122.477255
 
 # Display one or more LAZ/LAS files in a 3D viewer (requires [display] extra)
 lidar-lookup path/to/file.laz
 lidar-lookup file1.laz file2.laz file3.las   # multiple files in one view
 # --display is optional when passing .laz/.las as arguments:
 lidar-lookup --display path/to/file.laz      # same as above
-# Add pin(s) at (lon, lat) or (lon, lat, z) in WGS84 (z sampled from point cloud if omitted):
-lidar-lookup file.laz --pin -86.788 39.367
-lidar-lookup file.laz --pin -86.788 39.367 200
+# Add pin(s) at (lat, lon) or (lat, lon, z) in WGS84 (z sampled from point cloud if omitted):
+lidar-lookup file.laz --pin 39.367 -86.788
+lidar-lookup file.laz --pin 39.367 -86.788 200
 ```
 
 ### Sample locations
 
 Included JSON samples (use from the repo root or point to `samples/`):
 
-| Location | JSON file | Point (lon, lat) |
+| Location | JSON file | Point (lat, lon) |
 |----------|-----------|------------------|
-| Golden Gate Bridge (south tower) | `samples/golden-gate-bridge.json` | -122.478255, 37.819023 |
-| Gateway Arch, St. Louis | `samples/gateway-arch.json` | -90.185099, 38.624626 |
-| Washington Monument, DC | `samples/washington-monument.json` | -77.035072, 38.889467 |
+| Golden Gate Bridge (south tower) | `samples/golden-gate-bridge.json` | 37.819023, -122.478255 |
+| Gateway Arch, St. Louis | `samples/gateway-arch.json` | 38.624626, -90.185099 |
+| Washington Monument, DC | `samples/washington-monument.json` | 38.889467, -77.035072 |
 
 ```bash
 lidar-lookup samples/golden-gate-bridge.json --filenames
-lidar-lookup --point -122.478255 37.819023   # Golden Gate Bridge
-lidar-lookup --point -90.185099 38.624626   # Gateway Arch
-lidar-lookup --point -77.035072 38.889467   # Washington Monument
+lidar-lookup --point 37.819023 -122.478255   # Golden Gate Bridge
+lidar-lookup --point 38.624626 -90.185099   # Gateway Arch
+lidar-lookup --point 38.889467 -77.035072   # Washington Monument
 ```
 
 ## Per-project indexes (created only when missing)

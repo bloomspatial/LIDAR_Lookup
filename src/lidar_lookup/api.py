@@ -229,6 +229,7 @@ def _project_urls_filtered_by_metadata_index(
         return _filter_index_by_bbox(index, bbox)
 
     _log.debug("per-project index file missing --- %s", cache_path)
+    _log.info("Index not found -- building. (this will take a while)")
     _log.debug("Building index from XML metadata: %s", metadata_url)
     with tempfile.TemporaryDirectory(prefix="lidar_lookup_") as tmpdir:
         tmp = Path(tmpdir)
